@@ -2,11 +2,24 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
 module Codata where
 
 import Prelude hiding (Bool(..))
 
 data DataBool = True | False
+
+newtype If = If { unIf :: forall a. a -> a -> a }
+
+next :: a -> b -> b
+next _ b = b
+
+true, false :: If
+true = If const
+false = If next
+
+ite :: If -> a -> a -> a
+ite (If bool) = bool
 
 class CodataBool b where
   ifThenElse :: forall a. b -> a -> a -> a
@@ -14,7 +27,7 @@ class CodataBool b where
 instance CodataBool DataBool where
   ifThenElse :: DataBool -> a -> a -> a
   ifThenElse True = const
-  ifThenElse False = seq
+  ifThenElse False = next
 
 data DataTree a = Leaf a | Branch (DataTree a) (DataTree a)
 
@@ -24,10 +37,10 @@ dataWalk leaf _ (Leaf a) = leaf a
 dataWalk leaf branch (Branch l r) = branch (dataWalk leaf branch l) (dataWalk leaf branch r)
 
 -- | codata as a typeclass
-class CodataTree t a b where
+class CodataTree tree a b where
   coLeaf :: a -> b
   coBranch :: b -> b -> b
-  coWalk :: t a -> b
+  coWalk :: tree a -> b
 
 instance Show a => CodataTree DataTree a String where
   coLeaf :: a -> String
