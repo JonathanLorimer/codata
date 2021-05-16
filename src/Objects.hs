@@ -88,3 +88,62 @@ test = 1 `cell` 2 `cell` 3 `cell` nil
 --
 -- $> Objects.equal Objects.test Objects.nil
 
+
+data ListObjectExtended a =
+  ListObjectExtended
+    { nullEx :: Bool
+    , headMayEx :: Maybe a
+    , tailMayEx :: Maybe (ListObjectExtended a)
+    , consEx :: a -> ListObjectExtended a
+    , equalEx :: Eq a => ListObjectExtended a -> Bool
+    }
+
+instance Show a => Show (ListObjectExtended a) where
+  show lo = if nullEx lo then "Nil" else (show . fromJust $ headMayEx lo) <> " : " <> (show . fromJust $ tailMayEx lo)
+
+nilEx :: ListObjectExtended a
+nilEx =
+  let self =
+        ListObjectExtended
+          { nullEx = True
+          , headMayEx = Nothing
+          , tailMayEx = Nothing
+          , consEx = (`cellEx` self)
+          , equalEx = nullEx
+          }
+  in self
+
+cellEx :: a -> ListObjectExtended a -> ListObjectExtended a
+cellEx x l =
+  let self =
+        ListObjectExtended
+          { nullEx = False
+          , headMayEx = Just x
+          , tailMayEx = Just l
+          , consEx = (`cellEx` self)
+          , equalEx = \m -> Just x == headMayEx m && (case tailMayEx m of
+                                                    Nothing -> nullEx l
+                                                    Just tail -> equalEx l tail)
+          }
+  in self
+
+intervalEx :: (Num a, Ord a) => a -> a -> ListObjectExtended a
+intervalEx x y =
+  let self =
+        ListObjectExtended
+          { nullEx = False
+          , headMayEx = Just x
+          , tailMayEx = Just $ intervalEx (x + 1) y
+          , consEx = (`cellEx` self)
+          , equalEx =
+            \m -> Just x == headMayEx m
+               && (case tailMayEx m of
+                        Nothing -> headMayEx m == Just y
+                        Just tail -> equalEx (intervalEx (x + 1) y) tail)
+          }
+   in if x > y then nilEx else self
+
+infixr 5 `cellEx`
+
+testEx :: ListObjectExtended Int
+testEx = 1 `cellEx` 2 `cellEx` 3 `cellEx` nilEx
