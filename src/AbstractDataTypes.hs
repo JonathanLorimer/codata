@@ -52,7 +52,7 @@ setImp =
     (flip elem)   -- contains
     union         -- union
 
-runSetImp :: Eq a => (ExistentialSet a -> b) -> b
+runSetImp :: Eq a => (forall a. ExistentialSet a -> b) -> b
 runSetImp f = f setImp
 
 test :: Bool
