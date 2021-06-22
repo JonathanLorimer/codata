@@ -1,10 +1,10 @@
 name: codata
 version: 0.1.0
-synopsis: "HTML Over The Wire but in Haskell"
-description: "Give me SSR or give me death"
+synopsis: "Exploration of codata and abstraction in haskell"
+description: "How does flipping an arrow and adding an existential type change our programs?"
 maintainer: Jonathan Lorimer
-github: jonathanlorimer/haskwire
-category: WebDev
+github: jonathanlorimer/codata-example
+category: Codata
 
 ghc-options:
   - -Weverything
